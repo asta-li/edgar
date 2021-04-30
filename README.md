@@ -22,6 +22,7 @@ POSTGRES_USERNAME
 POSTGRES_PASSWORD
 POSTGRES_DBNAME
 FMP_KEY
+OPENAI_KEY
 ```
 Run the jupyter notebook to set up and inspect the database.
 ```
