@@ -23,7 +23,10 @@ POSTGRES_PASSWORD
 POSTGRES_DBNAME
 FMP_KEY
 ```
-
+Run the jupyter notebook to set up and inspect the database.
+```
+jupyter notebook setup_db.ipynb
+```
 Then run `populate_db.py` to fill the postgres database with data.
 ```
 python populate_db.py
