@@ -35,6 +35,17 @@ Then run `populate_db.py` to fill the postgres database with data.
 python populate_db.py
 ```
 
+### Set up the AWS Elastic Beanstalk project
+If the project does not yet exist, follow these instructions:
+https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create-deploy-python-flask.html
+```
+cd server
+eb init -p python-3.6 flask-edgar --region us-west-1
+eb create flask-env
+eb setenv POSTGRES_ADDRESS=...
+```
+
+
 ## Run the code
 
 ### Run the Python Flask server

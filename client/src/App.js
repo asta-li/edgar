@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
 // Material UI imports.
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -7,11 +6,11 @@ import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import {makeStyles} from '@material-ui/styles';
-import TextField from '@material-ui/core/TextField';
 
 // Local imports.
 import logo from './logo.png';
-
+import {DataDisplay} from './DataDisplay.js';
+import {QueryInput} from './QueryInput.js';
 
 // Styles the Home component.
 const useStyles = makeStyles((theme) => ({
@@ -29,12 +28,8 @@ const useStyles = makeStyles((theme) => ({
   intro: {
     marginBottom: theme.spacing(5),
   },
-  form: {
-    width: '100%',
-    marginTop: theme.spacing(1),
-  },
-  submit: {
-    margin: theme.spacing(0, 0, 0),
+  spacing: {
+    marginTop: theme.spacing(5),
   },
 }));
 
@@ -51,6 +46,8 @@ const Copyright = () => {
 
 const App = () => {
   const classes = useStyles();
+  const [response, setResponse] = React.useState(null);
+
   return (
     <div>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
@@ -60,15 +57,12 @@ const App = () => {
           <Typography component="h1" variant="h4" gutterBottom>
             Hi, I'm Edgar.
           </Typography>
-          <Typography className={classes.intro} component="h2" variant="h7" gutterBottom>
+          <Typography className={classes.intro} component="h2" variant="h6" gutterBottom>
             I'm here to help you with investment research.
           </Typography>
-          <TextField
-            id="query"
-            fullWidth
-            label="Type your question here"
-            variant="outlined" 
-          />
+          <QueryInput setResponse={setResponse} />
+          <Typography className={classes.spacing}></Typography>
+          <DataDisplay response={response} />
       </Container>
       <Box mt={8}>
         <Copyright />

@@ -3,11 +3,13 @@ import os
 import sys
 
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import psycopg2
 
 from gpt_api import set_openai_key, GPT, Example
 
 application = Flask(__name__)
+CORS(application)
 application.config["DEBUG"] = True
 
 
@@ -20,7 +22,6 @@ def get_db_connection():
     POSTGRES_DBNAME = os.environ.get('POSTGRES_DBNAME')
 
     # Create connection and cursor.
-    print("POSTGRES_PASSWORD", POSTGRES_PASSWORD)
     conn = psycopg2.connect(host=POSTGRES_ADDRESS,
                     database=POSTGRES_DBNAME,
                     user=POSTGRES_USERNAME,
@@ -95,6 +96,13 @@ def clean_query(query):
     return query
 
 
+def package_response(response):
+    response = jsonify(response)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+    return response
+
+
 @application.route('/api', methods=['GET'])
 def api():
     # Get the user input parameter.
@@ -127,7 +135,7 @@ def api():
     # Short-circuit if the SQL query looks fishy.
     if "SELECT" not in sql_query or "income" not in sql_query:
         response["status"]["debug_message"] = "Invalid SQL query."
-        return jsonify(response)
+        return package_response(response)
 
     # Run the SQL query and grab the result.
     conn.commit()
@@ -135,7 +143,7 @@ def api():
         cur.execute(sql_query)
     except Exception as err:
         response["status"]["debug_message"] = str(err)
-        return jsonify(response)
+        return package_response(response)
     result = cur.fetchall()
 
     # Process the different kinds of results. From here on out stuff is valid.
@@ -147,7 +155,7 @@ def api():
         x, y = zip(*result)
         response["data"]["type"] = "plot"
         response["data"]["plot"] = { "x": x, "y": y }
-        return jsonify(response)
+        return package_response(response)
         
     # Unnest single values.
     if len(result) == 1 and len(result[0]) == 1:
@@ -156,7 +164,7 @@ def api():
     # Return the raw values.
     response["data"]["type"] = "value"
     response["data"]["value"] = result
-    return jsonify(response)
+    return package_response(response)
     
 
 if __name__ == "__main__":
