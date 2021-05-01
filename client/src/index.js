@@ -5,7 +5,7 @@ import { ThemeProvider } from '@material-ui/core/styles';
 import {
     BrowserRouter as Router,
 } from 'react-router-dom';
-import FaxMachineApp from './App';
+import App from './App';
 import theme from './theme';
 
 ReactDOM.render(
@@ -13,7 +13,7 @@ ReactDOM.render(
         <CssBaseline />
         <React.StrictMode>
             <Router>
-                <FaxMachineApp />
+                <App />
             </Router>
         </React.StrictMode>
         ,
