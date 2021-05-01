@@ -1,18 +1,21 @@
 # Fills a Postgres DB with public company financial data
 
-## Enter the conda environment
+## Setup
+
+### Enter the conda environment
 ```
 conda activate edgar
 ```
+To exit, run `conda deactivate`.
 
-## Requirements
+### Requirements
 - Install miniconda: https://docs.conda.io/en/latest/miniconda.html
 - Set up the conda and pip environments.
 ```
 conda env create -f environment.yml
 ```
 
-## Setup
+### Setup database
 Load the following variables into your environment:
 ```
 POSTGRES_ADDRESS
@@ -32,21 +35,48 @@ Then run `populate_db.py` to fill the postgres database with data.
 python populate_db.py
 ```
 
-## Run server
-Enter the `eb-flask` directory to run the server.
+## Run the code
+
+### Run the Python Flask server
+Build the static React frontend.
 ```
-cd eb-flask
+cd client
+npm run build
+cd ..
 ```
-To run the server locally:
+Then enter the `server` directory.
+```
+cd server
+```
+Run the server locally:
 ```
 python application.py
 ```
-To deploy to production, run:
+
+### Run in React development mode
+Run the client code in development mode.
+
+From project root:
 ```
+cd client
+npm start
+```
+
+## Deploy
+
+To deploy to production (AWS Elastic Beanstalk), run:
+```
+cd client
+npm run build
+cd ../server
 eb deploy flask-env
 ```
 
-## Exit the conda environment
+## Test the API locally
+
+### Test `/api`
+
+Query the fax status endpoint for the given Fax ID.
 ```
-conda deactivate
+curl -X GET hhttp://127.0.0.1:5000/api?query=${USER_QUERY}
 ```
