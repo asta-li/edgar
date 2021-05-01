@@ -1,8 +1,14 @@
 .env
 .setup
+.ipynb_checkpoints
 
 # MacOS
 .DS_Store
 
 # Python
 __pycache__
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

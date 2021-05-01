@@ -10,10 +10,9 @@ conda activate edgar
 - Set up the conda and pip environments.
 ```
 conda env create -f environment.yml
-pip install -r requirements.txt
 ```
 
-## Run the code
+## Setup
 Load the following variables into your environment:
 ```
 POSTGRES_ADDRESS
@@ -31,6 +30,20 @@ jupyter notebook setup_db.ipynb
 Then run `populate_db.py` to fill the postgres database with data.
 ```
 python populate_db.py
+```
+
+## Run server
+Enter the `eb-flask` directory to run the server.
+```
+cd eb-flask
+```
+To run the server locally:
+```
+python application.py
+```
+To deploy to production, run:
+```
+eb deploy flask-env
 ```
 
 ## Exit the conda environment

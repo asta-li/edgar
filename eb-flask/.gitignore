@@ -1,0 +1,12 @@
+.env
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+
+# MacOS
+.DS_Store
+
+# Python
+__pycache__
