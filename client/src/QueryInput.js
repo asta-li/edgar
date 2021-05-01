@@ -6,8 +6,15 @@ const QueryInput = props => {
     const handleKeyDown = (event) => {
         if (event.key === "Enter") {
             let query = event.target.value
-            props.setResponse("Asking Edgar: " + query)
+            props.setResponse("Asking Edgar...")
+            
+            // Short-circuit likely-invalid queries.
+            if (query.length < 15) {
+                props.setResponse("Sorry, I couldn't understand your question.")
+                return
+            }
 
+            // Query the API with the user input.
             let config = {
                 params: {
                     "query": query
@@ -18,16 +25,15 @@ const QueryInput = props => {
             axios.get('http://127.0.0.1:5000/api', config)
             .then((response) => {
                 console.log(response);
-                props.setResponse(JSON.stringify(response.data))
+                if (!response.data.status.valid) {
+                    throw new Error("API query failed.");
+                }
+                props.setResponse(response.data.data)
             })
             .catch((error) => {
                 console.log(error);
                 props.setResponse("Sorry, I couldn't understand your question! I'm still learning.")
             })
-            .then(() => {
-                // always executed
-                console.log("Hello world!");
-            });
         }
     }
 
@@ -36,7 +42,7 @@ const QueryInput = props => {
             <TextField
               id="query"
               fullWidth
-              label="Type your question here"
+              label="Ask me a question."
               variant="outlined"
               onKeyDown={handleKeyDown}
             />

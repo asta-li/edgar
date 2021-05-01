@@ -107,22 +107,16 @@ def package_response(response):
 def api():
     # Get the user input parameter.
     user_input = request.args.get("query", default="")
-    
-    # Get the GPT3-generated SQL query. 
-    output = gpt.submit_request(user_input)
-    openai_result = output['choices'][0].text
-    sql_query = openai_result.split('output:')[1]
-    sql_query = clean_query(sql_query)
 
     # Default invalid response. This is the schema of the response.
     response = {
         "metadata": {
             "user_input": user_input,
-            "sql_query": sql_query,
+            "sql_query": "",
         },
         "status": {
             "valid": False,
-            "error_message": "Sorry, Edgar couldn't understand your question! He's still learning :)",
+            "error_message": "Sorry, Edgar couldn't understand your question! He's still learning...",
             "debug_message": "",
         },
         "data": {
@@ -131,6 +125,18 @@ def api():
             "plot": {},  # When valid, this is a dict of plot values: {"x": x, "y": y}
         },
     }
+
+    # Short-circuit if the user query looks fishy.
+    if len(user_input) < 15:
+        response["status"]["debug_message"] = "Invalid user input."
+        return package_response(response)
+
+    # Get the GPT3-generated SQL query. 
+    output = gpt.submit_request(user_input)
+    openai_result = output['choices'][0].text
+    sql_query = openai_result.split('output:')[1]
+    sql_query = clean_query(sql_query)
+    response["metadata"]["sql_query"] = sql_query
 
     # Short-circuit if the SQL query looks fishy.
     if "SELECT" not in sql_query or "income" not in sql_query:
@@ -146,21 +152,27 @@ def api():
         return package_response(response)
     result = cur.fetchall()
 
-    # Process the different kinds of results. From here on out stuff is valid.
+    # Process the different kinds of results. From here on out, we know the result is valid.
+    # Unnest single values.
+    try:
+        if len(result) == 1 and len(result[0]) == 1:
+            result = result[0][0]
+    except TypeError:
+        pass
     response["status"]["valid"] = True
+    response["data"]["value"] = result
     response["status"]["error_message"] = ""
 
     # Split the results into (x, y) data for plotting.
-    if len(result) >= 1 and len(result[0]) == 2:
-        x, y = zip(*result)
-        response["data"]["type"] = "plot"
-        response["data"]["plot"] = { "x": x, "y": y }
-        return package_response(response)
-        
-    # Unnest single values.
-    if len(result) == 1 and len(result[0]) == 1:
-        result = result[0][0]
-
+    try:
+        if len(result) >= 1 and len(result[0]) == 2:
+            x, y = zip(*result)
+            response["data"]["type"] = "plot"
+            response["data"]["plot"] = { "x": x, "y": y }
+            return package_response(response)
+    except TypeError:
+        pass
+    
     # Return the raw values.
     response["data"]["type"] = "value"
     response["data"]["value"] = result

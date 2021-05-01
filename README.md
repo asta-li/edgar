@@ -45,7 +45,6 @@ eb create flask-env
 eb setenv POSTGRES_ADDRESS=...
 ```
 
-
 ## Run the code
 
 ### Run the Python Flask server
