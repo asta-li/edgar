@@ -64,7 +64,7 @@ const App = () => {
           <Typography className={classes.spacing}></Typography>
           <DataDisplay response={response} />
       </Container>
-      <Box mt={8}>
+      <Box mt={50}>
         <Copyright />
       </Box>
       </div>

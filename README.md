@@ -1,4 +1,13 @@
-# Fills a Postgres DB with public company financial data
+# Ask Edgar
+
+Ask Edgar English-language questions about public company financial data.
+
+For example:
+- What were the top 5 companies with the highest EBITDA?
+- Plot the revenue over time of AAPL over the last 8 years.
+- How much revenue did Facebook have in the last 2 years?
+
+![screenshot](https://github.com/asta-li/edgar/blob/main/screenshot1.png?raw=true)
 
 ## Setup
 
