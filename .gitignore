@@ -3,3 +3,8 @@
 .ipynb_checkpoints
 .DS_Store
 .vscode
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
