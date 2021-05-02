@@ -107,5 +107,5 @@ eb deploy flask-env
 
 Query the fax status endpoint for the given Fax ID.
 ```
-curl -X GET hhttp://127.0.0.1:5000/api?query=${USER_QUERY}
+curl -X GET http://127.0.0.1:5000/api?query=${USER_QUERY}
 ```
