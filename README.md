@@ -67,9 +67,10 @@ cd ..
 ## Run the code
 
 ### Run the Python Flask server
-Build the static React frontend.
+Build the static React frontend. Also install npm dependencies.
 ```
 cd client
+npm install
 npm run build
 cd ..
 ```
