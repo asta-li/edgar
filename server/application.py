@@ -53,47 +53,36 @@ def setup_openai():
                         "totalCurrentAssets, goodwill, totalInvestments, totalDebt. "
                         "Use 'asc' to get the least and 'desc' to get the most.")
 
-    gpt.add_example(Example("What is the market cap of Google?", 
-                            "SELECT mktCap FROM profile_table WHERE symbol = 'GOOGL'"))
-
     gpt.add_example(Example("Who is Facebook's CEO?", 
                             "SELECT ceo FROM profile_table WHERE symbol = 'FB'"))
 
-    gpt.add_example(Example("What are the 5 companies that have the most profit?", 
-                            "SELECT symbol, grossProfit from balance WHERE EXTRACT(YEAR FROM date) = 2020 ORDER BY grossProfit desc LIMIT 5;"))
+    gpt.add_example(Example("What are the 5 companies that have the most cash?", 
+                            "SELECT symbol, cashAndCashEquivalents from balance WHERE EXTRACT(YEAR FROM date) = 2020 ORDER BY cashAndCashEquivalents desc LIMIT 5;"))
 
     gpt.add_example(Example("What are the 3 companies that have the most debt?", 
                             "SELECT symbol, totalDebt from balance WHERE EXTRACT(YEAR FROM date) = 2020 ORDER BY totalDebt desc LIMIT 3;"))
 
-    gpt.add_example(Example("How have Nvidia's investments changed over the past 10 years?", 
-                            "SELECT date, totalInvestments FROM balance WHERE symbol = 'NVDA'"
-                            " AND date >= now() - interval '10 years'"))
-
     gpt.add_example(Example("How much money did Amazon make in 2017?", 
                             "SELECT grossProfit FROM income_table WHERE symbol = 'AMZN' AND"
-                            " EXTRACT(YEAR FROM date) = 2017")) 
+                            " EXTRACT(YEAR FROM date) = 2017;")) 
 
     gpt.add_example(Example("What was Tesla's revenue in 2016?", 
-                            "SELECT revenue from income_table WHERE symbol = 'TSLA' AND EXTRACT(YEAR FROM date) = 2016"))
-
+                            "SELECT revenue from income_table WHERE symbol = 'TSLA' AND EXTRACT(YEAR FROM date) = 2016;"))
+    
+    #gpt.add_example(Example("What are the 10 companies with the highest profit to revenue ratio?", 
+    #                        "SELECT symbol, CAST(grossProfit AS float) / NULLIF(revenue, 0) AS ratio "
+    #                        "FROM income_table WHERE EXTRACT(YEAR FROM date) = 2020 ORDER BY ratio desc LIMIT 10;"))
+    
     gpt.add_example(Example("What were the top 7 companies with the highest revenue?", 
-                            "SELECT symbol, revenue from income_table WHERE EXTRACT(YEAR FROM date) = 2020 ORDER BY revenue desc LIMIT 7"))
+                            "SELECT symbol, revenue from income_table WHERE EXTRACT(YEAR FROM date) = 2020 ORDER BY revenue desc LIMIT 7;"))
 
-    gpt.add_example(Example("What were Apple's expenses over the last 8 years?", 
-                            "SELECT date, costAndExpenses FROM income_table WHERE symbol = 'AAPL'"
-                            " AND date >= now() - interval '8 years'"))
+    gpt.add_example(Example("Show me how Apple's revenue has changed over the last 8 years.", 
+                            "SELECT date, revenue FROM income_table WHERE symbol = 'AAPL'"
+                            " AND date >= now() - interval '8 years';"))
 
-    gpt.add_example(Example("What are the 10 companies with the highest R&D to revenue ratio?", 
-                            "SELECT symbol, CAST(researchAndDevelopmentExpenses AS float) / NULLIF(revenue, 0) AS ratio "
-                            "FROM income_table WHERE EXTRACT(YEAR FROM date) = 2020 ORDER BY ratio desc LIMIT 10;"))
-
-    gpt.add_example(Example("Show me the 3 companies with the highest profit to revenue ratio.", 
-                            "SELECT symbol, CAST(grossProfit AS float) / NULLIF(revenue, 0) AS ratio "
-                            "FROM income_table WHERE EXTRACT(YEAR FROM date) = 2020 ORDER BY ratio desc LIMIT 3;"))
-
-    gpt.add_example(Example("What are the 10 companies with the highest revenue to employee ratio?",
-                            "SELECT i.symbol, i.revenue / p.fullTimeEmployees as ratio FROM profile_table p, income_table i WHERE p.symbol = i.symbol AND EXTRACT(YEAR FROM i.date) = 2020 ORDER BY ratio desc LIMIT 10"))
-
+    gpt.add_example(Example("How has Google's R&D to revenue ratio changed over the last 20 years?", 
+                            "SELECT date, CAST(researchAndDevelopmentExpenses AS float) / NULLIF(revenue, 0) "
+                            "FROM income_table WHERE symbol = 'GOOGL' AND date >= now() - interval '20 years';"))
     return gpt
 
 # Set up global vars. 
@@ -144,44 +133,50 @@ def api():
         response["status"]["debug_message"] = "Invalid user input."
         return package_response(response)
 
-    # Get the GPT3-generated SQL query. 
-    output = gpt.submit_request(user_input)
-    openai_result = output['choices'][0].text
-    sql_query = openai_result.split('output:')[1]
-    sql_query = clean_query(sql_query)
-    response["metadata"]["sql_query"] = sql_query
+    def input_to_query(user_input):
+        # Get the GPT3-generated SQL query. 
+        output = gpt.submit_request(user_input)
+        openai_result = output['choices'][0].text
+        sql_query = openai_result.split('output:')[1]
+        sql_query = clean_query(sql_query)
 
-    # Short-circuit if the SQL query looks fishy.
-    if "SELECT" not in sql_query:
-        response["status"]["debug_message"] = "Invalid SQL query."
-        return package_response(response)
-
-    # Some straight-up hacks for things that GPT-3 is bad at:
-    # Switch descending to ascending order for top-least type of questions. 
-    if "least" in user_input and "desc" in sql_query:
-        sql_query = sql_query.replace("desc", "asc")
-    # Looking for data sooner than now() never makes sense.
-    if "WHERE date >= now() AND" in sql_query:
-        sql_query = sql_query.replace("WHERE date >= now() AND", "WHERE")
-    if "researchAndDevelopmentExpenses" in sql_query and "CAST(researchAndDevelopmentExpenses" not in sql_query:
-        sql_query = sql_query.replace("researchAndDevelopmentExpenses", "CAST(researchAndDevelopmentExpenses AS float)")
-    if "/ revenue" in sql_query:
-        sql_query = sql_query.replace("revenue", "NULLIF(revenue, 0)")
-    if "SUM(goodwill)" in sql_query:
-        sql_query = sql_query.replace("SUM(goodwill)", "goodwill")
-    if "date >= now() - interval '20" in sql_query:
-        sql_query = sql_query.replace("date >= now() - interval '20", "EXTRACT(YEAR FROM date) = '20")
-    if "EXTRACT(YEAR FROM date)" in sql_query and "years" in sql_query:
-        sql_query = sql_query.replace("EXTRACT(YEAR FROM date) = ", "date >= now() - interval ")
-    response["metadata"]["sql_query"] = sql_query
+        # Some straight-up hacks for things that GPT-3 is bad at:
+        # Switch descending to ascending order for top-least type of questions. 
+        if "least" in user_input and "desc" in sql_query:
+            sql_query = sql_query.replace("desc", "asc")
+        # Looking for data sooner than now() never makes sense.
+        if "WHERE date >= now() AND" in sql_query:
+            sql_query = sql_query.replace("WHERE date >= now() AND", "WHERE")
+        if "researchAndDevelopmentExpenses" in sql_query and "CAST(researchAndDevelopmentExpenses" not in sql_query:
+            sql_query = sql_query.replace("researchAndDevelopmentExpenses", "CAST(researchAndDevelopmentExpenses AS float)")
+        if "/ revenue" in sql_query:
+            sql_query = sql_query.replace("revenue", "NULLIF(revenue, 0)")
+        if "SUM(goodwill)" in sql_query:
+            sql_query = sql_query.replace("SUM(goodwill)", "goodwill")
+        if "date >= now() - interval '20" in sql_query:
+            sql_query = sql_query.replace("date >= now() - interval '20", "EXTRACT(YEAR FROM date) = '20")
+        if "EXTRACT(YEAR FROM date)" in sql_query and "years" in sql_query:
+            sql_query = sql_query.replace("EXTRACT(YEAR FROM date) = ", "date >= now() - interval ")
+        #if "Google's R&D" in user_input:
+        #    sql_query = ("SELECT date, CAST(researchAndDevelopmentExpenses AS float) / NULLIF(revenue, 0) "
+        #       "FROM income_table WHERE symbol = 'GOOGL' AND date >= now() - interval '20 years';")
+        response["metadata"]["sql_query"] = sql_query
+        return sql_query
 
     # Run the SQL query and grab the result.
+    sql_query = input_to_query(user_input)
     conn.commit()
     try:
         cur.execute(sql_query)
     except Exception as err:
-        response["status"]["debug_message"] = str(err)
-        return package_response(response)
+        # If it fails, try one more time:
+        try:
+            sql_query = input_to_query(user_input)
+            conn.commit()
+            cur.execute(sql_query)
+        except Exception as err:
+            response["status"]["debug_message"] = str(err)
+            return package_response(response)
     result = cur.fetchall()
 
     # Process the different kinds of results. From here on out, we know the result is valid.

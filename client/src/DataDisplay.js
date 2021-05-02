@@ -107,7 +107,6 @@ const DataDisplay = props => {
         return (
             <React.Fragment>
             <Typography component="h2" variant="h6">
-            {"The answer is: "}
             <NumberFormat
              value={props.response.value}
              displayType={'text'}
@@ -132,13 +131,24 @@ const DataDisplay = props => {
             </React.Fragment>
         );
     }
-    return (
-        <React.Fragment>
-        <Typography component="h2" variant="h6">
-        { props.response.value }
-        </Typography>
-        </React.Fragment>
-    );
+    try {
+        return (
+            <React.Fragment>
+            <Typography component="h2" variant="h6">
+            { props.response.value }
+            </Typography>
+            </React.Fragment>
+        );
+    }
+    catch(err) {
+        return (
+            <React.Fragment>
+            <Typography component="h2" variant="h6">
+            { JSON.stringify(props.response.value) }
+            </Typography>
+            </React.Fragment>
+        );    
+    }
 }
 
 export { DataDisplay };
