@@ -1,0 +1,12 @@
+name: edgar
+channels:
+  - conda-forge
+  - anaconda
+  - defaults
+dependencies:
+  - jupyter=1.0.0
+  - openai=0.6.3
+  - psycopg2=2.8.5
+  - python=3.6.13
+  - flask
+  - flask_cors
