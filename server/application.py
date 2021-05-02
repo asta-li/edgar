@@ -184,6 +184,30 @@ def api():
     response["data"]["value"] = result
     return package_response(response)
     
+@application.route('/teach', methods=['POST'])
+def teach():
+    query = request.args.get("query", default=None)
+    sql = request.args.get("sql", default=None)
+
+    if not query:
+        response["status"]["debug_message"] = "Required query param missing."
+        return package_response(response)
+    if not sql:
+        response["status"]["debug_message"] = "Required sql param missing."
+        return package_response(response)
+
+    gpt.add_example(Example(query, sql))
+    response = {
+        "status": {
+            "valid": True,
+            "error_message": "",
+            "debug_message": "",
+            "query" : query,
+            "sql" : sql,
+        },
+    }
+    return package_response(response)
+                    
 
 if __name__ == "__main__":
     # Setting debug to True enables debug output. This line should be
