@@ -15,7 +15,7 @@ import {QueryInput} from './QueryInput.js';
 // Styles the Home component.
 const useStyles = makeStyles((theme) => ({
   paper: {
-    marginTop: theme.spacing(15),
+    marginTop: theme.spacing(8),
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -58,7 +58,7 @@ const App = () => {
             Hi, I'm Edgar.
           </Typography>
           <Typography className={classes.intro} component="h2" variant="h6" gutterBottom>
-            I'm here to help you with investment research.
+            I'm here to help you research your investments.
           </Typography>
           <QueryInput setResponse={setResponse} />
           <Typography className={classes.spacing}></Typography>

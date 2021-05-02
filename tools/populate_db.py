@@ -124,6 +124,7 @@ def populate_db(symbols):
                     password=POSTGRES_PASSWORD,
                     port=POSTGRES_PORT)
     cursor = conn.cursor()
+
     for symbol in symbols:
         logger.info("Processing symbol: {}".format(symbol))
 
@@ -187,6 +188,10 @@ def query_income(conn, cursor, symbol):
         logger.error(records["Error Message"])
         return
         raise ValueError(records["Error Message"])
+
+    if records and records[0]["reportedCurrency"] != "USD":
+        logger.error(records[0]["reportedCurrency"] + "is not USD")
+        return
 
     for record in records:
         # Execute and commit insert
