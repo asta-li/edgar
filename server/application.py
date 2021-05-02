@@ -91,6 +91,9 @@ def setup_openai():
                             "SELECT symbol, CAST(grossProfit AS float) / NULLIF(revenue, 0) AS ratio "
                             "FROM income_table WHERE EXTRACT(YEAR FROM date) = 2020 ORDER BY ratio desc LIMIT 3;"))
 
+    gpt.add_example(Example("What are the 10 companies with the highest revenue to employee ratio?",
+                            "SELECT i.symbol, i.revenue / p.fullTimeEmployees as ratio FROM profile_table p, income_table i WHERE p.symbol = i.symbol AND EXTRACT(YEAR FROM i.date) = 2020 ORDER BY ratio desc LIMIT 10"))
+
     return gpt
 
 # Set up global vars. 
