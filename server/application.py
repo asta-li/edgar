@@ -42,38 +42,36 @@ def setup_openai():
             temperature=0.3,
             max_tokens=200)
     
-    gpt.add_instruction("Given an input question, respond with syntactically correct SQL."
-                        " Only use the table called 'income'. The 'income' table has columns:"
-                        " symbol (varchar(5)), fillingDate (timestamp), revenue (bigint), grossProfit (bigint),"
-                        " costAndExpenses (bigint), and ebitda (bigint)")
+    gpt.add_instruction("Given an input question, respond with syntactically correct SQL. "
+                        "Only use the table called 'income_table'. The 'income_table' table has "
+                        "columns: symbol, date, revenue, grossProfit, costAndExpenses, and ebitda")
     
     gpt.add_example(Example("What are the columns from income table?", 
-                            "SELECT symbol, fillingDate, revenue, grossProfit, costAndExpenses, ebitda FROM income"))
+                            "SELECT symbol, date, revenue, grossProfit, costAndExpenses, ebitda FROM income_table"))
     
     gpt.add_example(Example("How many companies have a filing date in the past 90 days?", 
-                            "SELECT COUNT(*) FROM income WHERE fillingDate >= now() - interval '90 days'"))
+                            "SELECT COUNT(*) FROM income_table WHERE date >= now() - interval '90 days'"))
     
     gpt.add_example(Example("When did company with symbol AAPL file its financial statement?", 
-                            "SELECT fillingDate FROM income WHERE symbol = 'AAPL'"))
+                            "SELECT date FROM income_table WHERE symbol = 'AAPL'"))
     
     gpt.add_example(Example("How much money did Tesla make in 2019?", 
-                            "SELECT SUM(revenue) FROM income WHERE symbol = 'TSLA' AND"
-                            " EXTRACT(YEAR FROM fillingDate) = 2019")) 
+                            "SELECT SUM(revenue) FROM income_table WHERE symbol = 'TSLA' AND"
+                            " EXTRACT(YEAR FROM date) = 2019")) 
 
     gpt.add_example(Example("How much revenue did Facebook have in the last 2 years?", 
-                            "SELECT SUM(revenue) FROM income WHERE symbol = 'FB'"
-                            " AND fillingDate >= now() - interval '2 years'"))
+                            "SELECT SUM(revenue) FROM income_table WHERE symbol = 'FB'"
+                            " AND date >= now() - interval '2 years'"))
     
     gpt.add_example(Example("What was the maximum revenue GOOGL had in the last 5 years?", 
-                            "SELECT MAX(revenue) from income WHERE symbol = 'GOOGL'"
-                            " AND fillingDate >= now() - interval '5 years'"))
+                            "SELECT MAX(revenue) from income_table WHERE symbol = 'GOOGL'"
+                            " AND date >= now() - interval '5 years'"))
     
     gpt.add_example(Example("What were the top 5 companies with the highest EBITDA?", 
-                            "SELECT ebitda, symbol from income ORDER BY ebitda desc LIMIT 5"))
+                            "SELECT ebitda, symbol from income_table ORDER BY ebitda desc LIMIT 5"))
     
     gpt.add_example(Example("What is the EBITDA of MSFT?", 
-                            "SELECT ebitda from income WHERE symbol = 'MSFT'"
-                            " AND fillingDate >= now() - interval '1 year'"))
+                            "SELECT ebitda from income_table WHERE symbol = 'MSFT'"))
     
     gpt.add_example(Example("Plot the revenue over time of AAPL over the last 8 years", 
                             "SELECT fillingDate, revenue FROM income WHERE symbol = 'AAPL'"

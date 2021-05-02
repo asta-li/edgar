@@ -1,3 +1,4 @@
 .env
 .setup
 .ipynb_checkpoints
+.DS_Store

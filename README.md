@@ -37,6 +37,7 @@ OPENAI_KEY
 ```
 Run the jupyter notebook to set up and inspect the database.
 ```
+cd tools
 jupyter notebook setup_db.ipynb
 ```
 Then run `populate_db.py` to fill the postgres database with data.
