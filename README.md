@@ -12,18 +12,19 @@ For example:
 
 ## Setup
 
+### Requirements / Initial setup
+- Install miniconda: https://docs.conda.io/en/latest/miniconda.html
+- Set up the conda and pip environments.
+```
+conda env create -f tools/environment.yml
+```
+
 ### Enter the conda environment
 ```
 conda activate edgar
 ```
 To exit, run `conda deactivate`.
 
-### Requirements
-- Install miniconda: https://docs.conda.io/en/latest/miniconda.html
-- Set up the conda and pip environments.
-```
-conda env create -f environment.yml
-```
 
 ### Setup database
 Load the following variables into your environment:
@@ -36,6 +37,8 @@ POSTGRES_DBNAME
 FMP_KEY
 OPENAI_KEY
 ```
+Run the following only if you are creating a new database instance! Otherwise, stop and move on to the next section.
+
 Run the jupyter notebook to set up and inspect the database.
 ```
 cd tools
@@ -49,11 +52,16 @@ python populate_db.py
 ### Set up the AWS Elastic Beanstalk project
 If the project does not yet exist, follow these instructions:
 https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create-deploy-python-flask.html
+
+The following will require you to have Beanstalk CLI installed:
+https://github.com/aws/aws-elastic-beanstalk-cli-setup
+
 ```
 cd server
 eb init -p python-3.6 flask-edgar --region us-west-1
 eb create flask-env
 eb setenv POSTGRES_ADDRESS=...
+cd ..
 ```
 
 ## Run the code
