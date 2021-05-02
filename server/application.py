@@ -169,6 +169,18 @@ def api():
     response["data"]["value"] = result
     response["status"]["error_message"] = ""
 
+    try:
+        if len(result) == 1 and len(cur.description) > 1:
+            column_names = [desc[0] for desc in cur.description]
+            value = {}
+            for id, v in enumerate(result[0]):
+                value[column_names[id]] = v
+            response["data"]["type"] = "table"
+            response["value"] = [value]
+            return package_response(response)
+    except TypeError:
+        pass
+
     # Split the results into (x, y) data for plotting.
     try:
         if len(result) >= 1 and len(result[0]) == 2:
@@ -178,10 +190,10 @@ def api():
             return package_response(response)
     except TypeError:
         pass
-    
+
     # Return the raw values.
     response["data"]["type"] = "value"
-    response["data"]["value"] = result
+    response["data"]["value"] = str(result)
     return package_response(response)
     
 @application.route('/teach', methods=['POST'])
@@ -207,7 +219,6 @@ def teach():
         },
     }
     return package_response(response)
-                    
 
 if __name__ == "__main__":
     # Setting debug to True enables debug output. This line should be
