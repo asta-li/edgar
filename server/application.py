@@ -68,11 +68,7 @@ def setup_openai():
 
     gpt.add_example(Example("What was Tesla's revenue in 2016?", 
                             "SELECT revenue from income_table WHERE symbol = 'TSLA' AND EXTRACT(YEAR FROM date) = 2016;"))
-    
-    #gpt.add_example(Example("What are the 10 companies with the highest profit to revenue ratio?", 
-    #                        "SELECT symbol, CAST(grossProfit AS float) / NULLIF(revenue, 0) AS ratio "
-    #                        "FROM income_table WHERE EXTRACT(YEAR FROM date) = 2020 ORDER BY ratio desc LIMIT 10;"))
-    
+
     gpt.add_example(Example("What were the top 7 companies with the highest revenue?", 
                             "SELECT symbol, revenue from income_table WHERE EXTRACT(YEAR FROM date) = 2020 ORDER BY revenue desc LIMIT 7;"))
 
@@ -157,9 +153,6 @@ def api():
             sql_query = sql_query.replace("date >= now() - interval '20", "EXTRACT(YEAR FROM date) = '20")
         if "EXTRACT(YEAR FROM date)" in sql_query and "years" in sql_query:
             sql_query = sql_query.replace("EXTRACT(YEAR FROM date) = ", "date >= now() - interval ")
-        #if "Google's R&D" in user_input:
-        #    sql_query = ("SELECT date, CAST(researchAndDevelopmentExpenses AS float) / NULLIF(revenue, 0) "
-        #       "FROM income_table WHERE symbol = 'GOOGL' AND date >= now() - interval '20 years';")
         response["metadata"]["sql_query"] = sql_query
         return sql_query
 

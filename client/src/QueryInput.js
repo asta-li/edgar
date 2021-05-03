@@ -21,9 +21,9 @@ const QueryInput = props => {
                 }
             }
     
-            axios.get('http://127.0.0.1:5000/api', config)
+            // axios.get('http://127.0.0.1:5000/api', config)
             // axios.get('/api', config)
-            // axios.get('http://flask-env.eba-dwnhvhak.us-west-1.elasticbeanstalk.com/api', config)
+            axios.get('http://flask-env.eba-dwnhvhak.us-west-1.elasticbeanstalk.com/api', config)
             .then((response) => {
                 console.log(response);
                 if (!response.data.status.valid) {
