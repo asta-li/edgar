@@ -44,14 +44,13 @@ def setup_openai():
             max_tokens=200)
 
     gpt.add_instruction("Given an input question, respond with syntactically correct PostgreSQL. "
-                        "Only use the table called 'income_table', 'profile_table', and 'balance'. "
-                        "The 'income_table' table has columns: "
-                        "symbol, date, revenue, grossProfit, costAndExpenses, researchAndDevelopmentExpenses, ebitda. "
+                        "Only use the tables 'income_table', 'profile_table', and 'balance'. "
+                        "The 'income_table' table has columns: symbol, date, revenue, "
+                        "grossProfit, costAndExpenses, researchAndDevelopmentExpenses. "
                         "The 'profile_table' table has columns: "
                         "symbol, mktCap, price, description, ceo, address, ipoDate. "
                         "The 'balance' table has columns: symbol, date, cashAndCashEquivalents, "
-                        "totalCurrentAssets, goodwill, totalInvestments, totalDebt. "
-                        "Use 'asc' to get the least and 'desc' to get the most.")
+                        "totalCurrentAssets, goodwill, totalInvestments, totalDebt.")
 
     gpt.add_example(Example("Who is Facebook's CEO?", 
                             "SELECT ceo FROM profile_table WHERE symbol = 'FB'"))
@@ -59,26 +58,21 @@ def setup_openai():
     gpt.add_example(Example("What are the 5 companies that have the most cash?", 
                             "SELECT symbol, cashAndCashEquivalents from balance WHERE EXTRACT(YEAR FROM date) = 2020 ORDER BY cashAndCashEquivalents desc LIMIT 5;"))
 
-    gpt.add_example(Example("What are the 3 companies that have the most debt?", 
-                            "SELECT symbol, totalDebt from balance WHERE EXTRACT(YEAR FROM date) = 2020 ORDER BY totalDebt desc LIMIT 3;"))
-
     gpt.add_example(Example("How much money did Amazon make in 2017?", 
                             "SELECT grossProfit FROM income_table WHERE symbol = 'AMZN' AND"
                             " EXTRACT(YEAR FROM date) = 2017;")) 
 
-    gpt.add_example(Example("What was Tesla's revenue in 2016?", 
-                            "SELECT revenue from income_table WHERE symbol = 'TSLA' AND EXTRACT(YEAR FROM date) = 2016;"))
-
     gpt.add_example(Example("What were the top 7 companies with the highest revenue?", 
-                            "SELECT symbol, revenue from income_table WHERE EXTRACT(YEAR FROM date) = 2020 ORDER BY revenue desc LIMIT 7;"))
+                            "SELECT symbol, revenue from income_table "
+                            "WHERE EXTRACT(YEAR FROM date) = 2020 ORDER BY revenue desc LIMIT 7;"))
 
-    gpt.add_example(Example("Show me how Apple's revenue has changed over the last 8 years.", 
-                            "SELECT date, revenue FROM income_table WHERE symbol = 'AAPL'"
-                            " AND date >= now() - interval '8 years';"))
+    gpt.add_example(Example("Show me how Netflix's profit has changed over the last 6 years.", 
+                            "SELECT date, grossProfit FROM income_table WHERE symbol = 'NFLX'"
+                            " AND date >= now() - interval '6 years';"))
 
-    gpt.add_example(Example("How has Google's R&D to revenue ratio changed over the last 20 years?", 
-                            "SELECT date, CAST(researchAndDevelopmentExpenses AS float) / NULLIF(revenue, 0) "
-                            "FROM income_table WHERE symbol = 'GOOGL' AND date >= now() - interval '20 years';"))
+    gpt.add_example(Example("How has Facebook's cost to revenue ratio changed over the last 17 years?", 
+                            "SELECT date, CAST(costAndExpenses AS float) / NULLIF(revenue, 0) "
+                            "FROM income_table WHERE symbol = 'FB' AND date >= now() - interval '17 years';"))
     return gpt
 
 # Set up global vars. 
@@ -125,7 +119,7 @@ def api():
     }
 
     # Short-circuit if the user query looks fishy.
-    if len(user_input) < 15:
+    if len(user_input) < 10:
         response["status"]["debug_message"] = "Invalid user input."
         return package_response(response)
 
@@ -143,16 +137,11 @@ def api():
         # Looking for data sooner than now() never makes sense.
         if "WHERE date >= now() AND" in sql_query:
             sql_query = sql_query.replace("WHERE date >= now() AND", "WHERE")
+        # Divide-by-zero handling is hard to learn.
         if "researchAndDevelopmentExpenses" in sql_query and "CAST(researchAndDevelopmentExpenses" not in sql_query:
             sql_query = sql_query.replace("researchAndDevelopmentExpenses", "CAST(researchAndDevelopmentExpenses AS float)")
         if "/ revenue" in sql_query:
             sql_query = sql_query.replace("revenue", "NULLIF(revenue, 0)")
-        if "SUM(goodwill)" in sql_query:
-            sql_query = sql_query.replace("SUM(goodwill)", "goodwill")
-        if "date >= now() - interval '20" in sql_query:
-            sql_query = sql_query.replace("date >= now() - interval '20", "EXTRACT(YEAR FROM date) = '20")
-        if "EXTRACT(YEAR FROM date)" in sql_query and "years" in sql_query:
-            sql_query = sql_query.replace("EXTRACT(YEAR FROM date) = ", "date >= now() - interval ")
         response["metadata"]["sql_query"] = sql_query
         return sql_query
 

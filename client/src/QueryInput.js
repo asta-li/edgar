@@ -9,7 +9,7 @@ const QueryInput = props => {
             props.setResponse("Asking Edgar...")
             
             // Short-circuit likely-invalid queries.
-            if (query.length < 15) {
+            if (query.length < 10) {
                 props.setResponse("Sorry, I couldn't understand your question.")
                 return
             }
