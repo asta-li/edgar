@@ -151,9 +151,9 @@ def query_profile(conn, cursor, symbol):
     records = response.json()
 
     if "Error Message" in records:
+        # raise ValueError(records["Error Message"])
         logger.error(records["Error Message"])
         return
-        raise ValueError(records["Error Message"])
 
     for record in records:
         # Execute and commit insert
@@ -187,7 +187,6 @@ def query_income(conn, cursor, symbol):
     if "Error Message" in records:
         logger.error(records["Error Message"])
         return
-        raise ValueError(records["Error Message"])
 
     if records and records[0]["reportedCurrency"] != "USD":
         logger.error(records[0]["reportedCurrency"] + "is not USD")
@@ -225,7 +224,6 @@ def query_balance(conn, cursor, symbol):
     if "Error Message" in records:
         logger.error(records["Error Message"])
         return
-        raise ValueError(records["Error Message"])
 
     for record in records:
         # Execute and commit insert

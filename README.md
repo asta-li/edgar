@@ -115,5 +115,4 @@ eb deploy flask-env
 Make sure to make the files public:
 https://s3.console.aws.amazon.com/s3/buckets/ask-edgar?region=us-west-1&tab=objects
 
-TODO: Update the web app setup:
-https://adamraudonis.medium.com/how-to-deploy-a-website-on-aws-with-docker-flask-react-from-scratch-d0845ebd9da4
+TODO: Deploy the web app correctly at some point.

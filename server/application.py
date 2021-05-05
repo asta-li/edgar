@@ -1,7 +1,6 @@
 import datetime
 import json
 import os
-import sys
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -11,8 +10,6 @@ from gpt_api import set_openai_key, GPT, Example
 
 application = Flask(__name__)
 CORS(application)
-application.config["DEBUG"] = True
-
 
 def get_db_connection():
     # Load credentials from environment. 
@@ -82,6 +79,7 @@ gpt = setup_openai()
 
 @application.route('/', methods=['GET'])
 def home():
+    # TODO: deliver static frontend.
     return '''<h1>Hello World!</h1>'''
 
 
@@ -151,7 +149,7 @@ def api():
     try:
         cur.execute(sql_query)
     except Exception as err:
-        # If it fails, try one more time:
+        # If it fails, try one more time (accomodates for temperature):
         try:
             sql_query = input_to_query(user_input)
             conn.commit()
@@ -217,33 +215,5 @@ def api():
     return package_response(response)
     
 
-@application.route('/teach', methods=['POST'])
-def teach():
-    query = request.args.get("query", default=None)
-    sql = request.args.get("sql", default=None)
-
-    if not query:
-        response["status"]["debug_message"] = "Required query param missing."
-        return package_response(response)
-    if not sql:
-        response["status"]["debug_message"] = "Required sql param missing."
-        return package_response(response)
-
-    gpt.add_example(Example(query, sql))
-    response = {
-        "status": {
-            "valid": True,
-            "error_message": "",
-            "debug_message": "",
-            "query" : query,
-            "sql" : sql,
-        },
-    }
-    return package_response(response)
-
-
 if __name__ == "__main__":
-    # Setting debug to True enables debug output.
-    # TODO: Remove before deploying to production.
-    application.debug = True
     application.run()
